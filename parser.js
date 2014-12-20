@@ -1,6 +1,6 @@
-function parser(input) {
+var markdown = {
 
-	var parseHeaders = function(inputString) {
+	parseHeaders: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			if ((/^#+/).test(string)) {
 				var headerDelimiter = string.match(/^#+/)[0];
@@ -16,35 +16,36 @@ function parser(input) {
 				return string;
 			}
 		});
-		return parsedString;
-	};
 
-	var parseItalics = function(inputString) {
+		return parsedString;
+	},
+
+	parseItalics: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			if ((/(\s[*]{1}[^*_].{1,}[*]{1}\s*|\s[_]{1}[^*_].{1,}[_]{1}\s*)/).test(string)) {
 				string = string.replace(/\s[_*]{1}/g, ' <span class="md-italicize">');
 				string = string.replace(/[_*]{1}\s/g, '</span> ');
 			}
 			return string;
-
 		});
-		return parsedString;
-	};
 
-	var parseBolds = function(inputString) {
+		return parsedString;
+	},
+
+	parseBolds: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			if ((/([*]{2}[^*_].{1,}[*]{2}|[_]{2}[^*_].{1,}[_]{2})/).test(string)) {
 				string = string.replace(/[_*]{2}/g, '<strong>');
 				var indexOfLastTag = string.lastIndexOf('<strong>');
 				string = string.substring(0,indexOfLastTag) + '</strong>' + string.substring(indexOfLastTag + 8);
 			}
-
 			return string;
 		});
-		return parsedString;
-	};
 
-	var parseImages = function(inputString) {
+		return parsedString;
+	},
+
+	parseImages: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			if ((/!\[\w*\]\({1}https?:.+\){1}/).test(string)) {
 				var images = string.match(/!\[\w*\]\({1}https?:\/\/[\w.*-\/*]+\){1}/g);
@@ -60,13 +61,13 @@ function parser(input) {
 					string = string.replace(images[i], renderedImage[i]);
 				}
 			}
-
 			return string;
 		});
-		return parsedString;
-	};
 
-	var parseLinks = function(inputString) {
+		return parsedString;
+	},
+
+	parseLinks: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			if ((/!{0}\[.*\]\({1}https?:.+\){1}/).test(string)) {
 				var links = string.match(/!{0}\[.*\]\({1}https?:.+\){1}/);
@@ -83,13 +84,13 @@ function parser(input) {
 					string = string.replace(links[i], renderedLinks[i]);
 				}
 			}
-
 			return string;
 		});
-		return parsedString;
-	};
 
-	var parseUnorderedLists = function(inputString) {
+		return parsedString;
+	},
+
+	parseUnorderedLists: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			var parseTags = function(regEx) {
 				if (regEx.test(splitUpString[idx - 1])) {
@@ -109,13 +110,13 @@ function parser(input) {
 			} else if ((/^\s{2}[*-]\s/).test(string)) {
 				parseTags(/^\s{2}[*-]\s/);
 			}
-
 			return string;
 		});
-		return parsedString;
-	};
 
-	var parseOrderedLists = function(inputString) {
+		return parsedString;
+	},
+
+	parseOrderedLists: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
 			var parseTags = function(regEx) {
 				if (regEx.test(splitUpString[idx - 1])) {
@@ -135,29 +136,28 @@ function parser(input) {
 			} else if ((/^\s{2}\d{1,}[.]\s/).test(string)) {
 				parseTags(/^\s{2}\d{1,}[.]\s/);
 			}
-
 			return string;
 		});
+
 		return parsedString;
-	};
+	},
 
-	var markdownParser = function(inputString) {
+	parse: function(inputString) {
 		var splitString = inputString.split('\n');
-		var parsedWithHeaders = parseHeaders(splitString);
-		var parsedWithItalics = parseItalics(parsedWithHeaders);
-		var parsedWithBolds = parseBolds(parsedWithItalics);
-		var parsedForImages = parseImages(parsedWithBolds);
-		var parsedForLinks = parseLinks(parsedForImages);
-		var parsedForUnorderedList = parseUnorderedLists(parsedForLinks);
-		var finalParsedString = parseOrderedLists(parsedForUnorderedList);
-		return finalParsedString.join('\n');
-	};
+		splitString = this.parseHeaders(splitString);
+		splitString = this.parseItalics(splitString);
+		splitString = this.parseBolds(splitString);
+		splitString = this.parseImages(splitString);
+		splitString = this.parseLinks(splitString);
+		splitString = this.parseUnorderedLists(splitString);
+		splitString = this.parseOrderedLists(splitString);
+		return splitString.join('\n');
+	}
 
-	return markdownParser(input);
-}
+};
 
 window.onload = function() {
 	document.getElementById('button').addEventListener('click', function() {
-		document.getElementById('viewer').innerHTML = parser(document.getElementById('text').value);
+		document.getElementById('viewer').innerHTML = markdown.parse(document.getElementById('text').value);
 	});
 };
