@@ -1,4 +1,4 @@
-var markdown = {
+var markdownParser = {
 
 	parseHeaders: function(inputString) {
 		var parsedString = inputString.map(function(string, idx, splitUpString) {
@@ -142,6 +142,23 @@ var markdown = {
 		return parsedString;
 	},
 
+	parseInlineCode: function(inputString) {
+		var parsedString = inputString.map(function(string, idx, splitUpString) {
+			if ((/`.+`/).test(string)) {
+				console.log((/(^|[\s>])`/).test(string))
+				if ((/>`/).test(string)){
+					string = string.replace(/>`/g, '> <code>');
+				} else {
+					string = string.replace(/(^|[\s])`/g, ' <code>');
+				}
+				string = string.replace(/`/g, '</code>');
+				console.log(string)
+			}
+			return string;
+		});
+		return parsedString;
+	},
+
 	parse: function(inputString) {
 		var splitString = inputString.split('\n');
 		splitString = this.parseHeaders(splitString);
@@ -151,6 +168,7 @@ var markdown = {
 		splitString = this.parseLinks(splitString);
 		splitString = this.parseUnorderedLists(splitString);
 		splitString = this.parseOrderedLists(splitString);
+		splitString = this.parseInlineCode(splitString);
 		return splitString.join('\n');
 	}
 
@@ -158,6 +176,6 @@ var markdown = {
 
 window.onload = function() {
 	document.getElementById('button').addEventListener('click', function() {
-		document.getElementById('viewer').innerHTML = markdown.parse(document.getElementById('text').value);
+		document.getElementById('viewer').innerHTML = markdownParser.parse(document.getElementById('text').value);
 	});
-};
+}
